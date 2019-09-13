@@ -15,9 +15,7 @@ const callAny = (obj) => {
       const origMethod = target.h[propKey]
       if (typeof origMethod !== 'function') return origMethod
       return function (...args) {
-        const result = origMethod.apply(this, args)
-        console.log(propKey + JSON.stringify(args) + ' -> ' + JSON.stringify(result))
-        return result
+        return origMethod.apply(this, args)
       }
     }
   }
@@ -29,17 +27,9 @@ class HyperPromise {
     this.h = Hyperdrive(storage, key, opts)
   }
 
-  async saycool (name) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(`cool name ${name}`)
-      }, 2000)
-    })
-  }
-
   async ready () {
     return new Promise((resolve, reject) => {
-      this.h._ready(promiseHandler(resolve, reject))
+      this.h.ready(promiseHandler(resolve, reject))
     })
   }
 
