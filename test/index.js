@@ -13,17 +13,6 @@ function create (key, opts) {
   return H(ram, key, { persist: false, ...opts })
 }
 
-  /*
-;(async () => {
-  var archive = H(ram, { persist: false })
-
-  console.log('Hyperdrive original property version:', archive.version)
-
-  const result = await archive.saycool('dk')
-  console.log('HyperPromise own method result', result)
-})()
-*/
-  /*
 tape('close event', async (t) => {
   t.plan(1)
 
@@ -37,7 +26,6 @@ tape('close event', async (t) => {
   await drive.ready()
   drive.close()
 })
-*/
 
 tape('write and read', async (t) => {
   var drive = create()
