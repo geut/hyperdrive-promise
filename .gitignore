@@ -1,0 +1,13 @@
+# editors
+.vscode/
+# node
+node_modules/
+# npm
+npm-debug.log
+
+.DS_Store
+
+.env
+
+.next/
+out/
