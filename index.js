@@ -23,8 +23,17 @@ const callAny = (obj) => {
 }
 
 class HyperPromise {
-  constructor (storage, key, opts) {
-    this.h = Hyperdrive(storage, key, opts)
+  constructor (storage, key, opts, hyperdrive) {
+    if (hyperdrive) {
+      this.h = hyperdrive
+    } else {
+      this.h = Hyperdrive(storage, key, opts)
+    }
+  }
+
+  createDiffStream (other, prefix, opts) {
+    if (other instanceof HyperPromise) other = other.version
+    return this.h.createDiffStream(other, prefix, opts)
   }
 
   async ready () {
@@ -157,6 +166,13 @@ class HyperPromise {
     return new Promise((resolve, reject) => {
       this.h.getAllMounts(opts, promiseHandler(resolve, reject))
     })
+  }
+
+  checkout (version, opts) {
+    // need to tweak this fn because it returns a new hyperdrive
+    // which needs to be wrapped
+    const hyper = this.h.checkout(version, opts)
+    return new HyperPromise(null, null, null, hyper)
   }
 }
 
