@@ -1,182 +1,53 @@
-var Hyperdrive = require('hyperdrive')
+const hyperdrive = require('hyperdrive')
 
-const promiseHandler = (resolve, reject) => (err, ...rest) => {
-  if (err) {
-    return reject(err)
-  }
-  resolve(...rest)
-}
-
-const callAny = (obj) => {
-  const handler = {
-    get (target, propKey, receiver) {
-      if (target[propKey]) return target[propKey]
-
-      const origMethod = target.h[propKey]
-      if (typeof origMethod !== 'function') return origMethod
-      return function (...args) {
-        return origMethod.apply(this, args)
-      }
-    }
-  }
-  return new Proxy(obj, handler)
-}
+const callbackMethods = ['ready', 'download', 'readFile', 'writeFile', 'unlink', 'mkdir',
+  'rmdir', 'readdir', 'stat', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close']
 
 class HyperPromise {
-  constructor (storage, key, opts, hyperdrive) {
-    if (hyperdrive) {
-      this.h = hyperdrive
+  constructor (...args) {
+    if (args.length === 1 && args[0].readFile) {
+      this.h = args[0]
     } else {
-      this.h = Hyperdrive(storage, key, opts)
+      this.h = hyperdrive(...args)
     }
+
+    this._createDiffStream.bind(this)
+    this._checkout.bind(this)
+
+    return new Proxy(this, this)
   }
 
-  createDiffStream (other, prefix, opts) {
-    if (other instanceof HyperPromise) other = other.version
+  get (target, propKey, receiver) {
+    if (propKey === 'h') return this.h
+    if (propKey === 'createDiffStream') return this._createDiffStream
+    if (propKey === 'checkout') return this._checkout
+    if (callbackMethods.includes(propKey)) return this._buildPromise(propKey)
+    if (typeof this.h[propKey] === 'function') return (...args) => this.h[propKey](...args)
+    return this.h[propKey]
+  }
+
+  _buildPromise (method) {
+    return (...args) => new Promise((resolve, reject) => {
+      args.push((err, ...rest) => {
+        if (err) return reject(err)
+        resolve(...rest)
+      })
+      this.h[method](...args)
+    })
+  }
+
+  _createDiffStream (other, prefix, opts) {
+    if (other instanceof HyperPromise) {
+      other = other.h
+    }
+
     return this.h.createDiffStream(other, prefix, opts)
   }
 
-  async ready () {
-    return new Promise((resolve, reject) => {
-      this.h.ready(promiseHandler(resolve, reject))
-    })
-  }
-
-  async open (name, flags) {
-    return new Promise((resolve, reject) => {
-      this.h.open(name, flags, promiseHandler(resolve, reject))
-    })
-  }
-
-  async read (fd, buf, offset, len, pos) {
-    return new Promise((resolve, reject) => {
-      this.h.read(fd, buf, offset, len, pos, promiseHandler(resolve, reject))
-    })
-  }
-
-  async write (fd, buf, offset, len, pos) {
-    return new Promise((resolve, reject) => {
-      this.h.write(fd, buf, offset, len, pos, promiseHandler(resolve, reject))
-    })
-  }
-
-  async create (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.create(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async readFile (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.readFile(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async writeFile (name, buf, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.writeFile(name, buf, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async truncate (name, size) {
-    return new Promise((resolve, reject) => {
-      this.h.truncate(name, size, promiseHandler(resolve, reject))
-    })
-  }
-
-  async mkdir (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.mkdir(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async lstat (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.lstat(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async stat (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.stat(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async access (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.access(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async exists (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.exists(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async readdir (name, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.readdir(name, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async unlink (name) {
-    return new Promise((resolve, reject) => {
-      this.h.unlink(name, promiseHandler(resolve, reject))
-    })
-  }
-
-  async rmdir (name) {
-    return new Promise((resolve, reject) => {
-      this.h.rmdir(name, promiseHandler(resolve, reject))
-    })
-  }
-
-  async close (fd) {
-    return new Promise((resolve, reject) => {
-      this.h.close(fd, promiseHandler(resolve, reject))
-    })
-  }
-
-  async fileStats (path, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.fileStats(path, opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  async mount (path, key, opts) {
-    return new Promise((resolve, reject) => {
-      this.h.mount(path, key, promiseHandler(resolve, reject))
-    })
-  }
-
-  async unmount (path) {
-    return new Promise((resolve, reject) => {
-      this.h.unmount(path, promiseHandler(resolve, reject))
-    })
-  }
-
-  async symlink (target, linkName) {
-    return new Promise((resolve, reject) => {
-      this.h.symlink(target, linkName, promiseHandler(resolve, reject))
-    })
-  }
-
-  async getAllMounts (opts) {
-    return new Promise((resolve, reject) => {
-      this.h.getAllMounts(opts, promiseHandler(resolve, reject))
-    })
-  }
-
-  checkout (version, opts) {
-    // need to tweak this fn because it returns a new hyperdrive
-    // which needs to be wrapped
-    const hyper = this.h.checkout(version, opts)
-    return new HyperPromise(null, null, null, hyper)
+  _checkout (version, opts) {
+    const h = this.h.checkout(version, opts)
+    return new HyperPromise(h)
   }
 }
 
-module.exports = (...args) => {
-  const h = new HyperPromise(...args)
-  return callAny(h)
-}
+module.exports = (...args) => new HyperPromise(...args)
