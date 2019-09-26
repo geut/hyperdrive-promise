@@ -86,8 +86,6 @@ async function verifyDiffStream (t, drive, [from, to], diffList) {
 
   return new Promise(resolve => {
     diffStream.on('data', ({ type, name }) => {
-      console.log({type})
-      console.log({name})
       const key = `${type}-${name}`
       if (!diffSet.has(key)) {
         return t.fail('an incorrect diff was streamed')
@@ -95,8 +93,7 @@ async function verifyDiffStream (t, drive, [from, to], diffList) {
       diffSet.delete(key)
     })
     diffStream.on('end', () => {
-      // Note(dk): check this https://github.com/mafintosh/hyperdrive/blob/4418d34ee01fb2f3c4d1ccbdbf5f5938c658c4fd/index.js#L97
-      t.same(diffSet.size, 1)
+      t.same(diffSet.size, 0)
       return resolve()
     })
   })
