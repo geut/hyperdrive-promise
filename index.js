@@ -5,6 +5,7 @@ const callbackMethods = ['ready', 'download', 'readFile', 'writeFile', 'unlink',
 
 class HyperPromise {
   constructor (...args) {
+    // Note (dk): check if first arg is an hyperdrive
     if (args.length === 1 && args[0].readFile) {
       this.h = args[0]
     } else {
