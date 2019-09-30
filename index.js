@@ -1,7 +1,7 @@
 const hyperdrive = require('hyperdrive')
 
-const callbackMethods = ['ready', 'download', 'readFile', 'writeFile', 'unlink', 'mkdir',
-  'rmdir', 'readdir', 'stat', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close']
+const callbackMethods = ['ready', 'readFile', 'writeFile', 'unlink', 'mkdir',
+  'rmdir', 'readdir', 'stat', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close', 'fileStats', 'truncate']
 
 class HyperPromise {
   constructor (...args) {
@@ -14,6 +14,7 @@ class HyperPromise {
 
     this._createDiffStream.bind(this)
     this._checkout.bind(this)
+    this._download.bind(this)
 
     return new Proxy(this, this)
   }
@@ -22,6 +23,7 @@ class HyperPromise {
     if (propKey === 'h') return this.h
     if (propKey === 'createDiffStream') return this._createDiffStream
     if (propKey === 'checkout') return this._checkout
+    if (propKey === 'download') return this._download
     if (callbackMethods.includes(propKey)) return this._buildPromise(propKey)
     if (typeof this.h[propKey] === 'function') return (...args) => this.h[propKey](...args)
     return this.h[propKey]
@@ -48,6 +50,14 @@ class HyperPromise {
   _checkout (version, opts) {
     const h = this.h.checkout(version, opts)
     return new HyperPromise(h)
+  }
+
+  _download (path, opts) {
+    const downloadHandler = this.h.download(path, opts)
+    downloadHandler.then = cb => {
+      downloadHandler.on('finish', cb)
+    }
+    return downloadHandler
   }
 }
 

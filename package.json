@@ -11,15 +11,21 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "corestore": "^2.0.0",
     "eslint": "^6.3.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "fuzzbuzz": "^2.0.0",
+    "pumpify": "^2.0.0",
     "random-access-memory": "^3.1.1",
+    "stream-collector": "^1.0.1",
     "tape": "^4.11.0",
-    "tape-promise": "^4.0.0"
+    "tape-promise": "^4.0.0",
+    "temporary-directory": "^1.0.2",
+    "through2": "^3.0.1"
   },
   "dependencies": {
     "hyperdrive": "^10.3.2"
