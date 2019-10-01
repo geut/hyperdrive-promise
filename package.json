@@ -9,8 +9,11 @@
     "lint": "eslint index.js",
     "prepublishOnly": "npm test"
   },
-  "keywords": [],
-  "author": "",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": ["dat", "hyperdrive", "p2p", "async-await"],
+  "author": "GEUT",
   "license": "ISC",
   "devDependencies": {
     "corestore": "^2.0.0",
