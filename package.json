@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "tape test/index.js",
-    "lint": "eslint index.js"
+    "lint": "eslint index.js",
+    "prepublishOnly": "npm test"
   },
   "keywords": [],
   "author": "",
