@@ -23,14 +23,22 @@ test('single-file download', async t => {
       const totals = await drive2.fileStats('hello')
       t.same(totals.blocks, 1)
       t.same(totals.downloadedBlocks, 0)
-      const [ total, byFile ] = await drive2.download('hello', { detailed: true })
+      const handle = drive2.download('hello', { detailed: true })
+      ondownloading(handle)
+    } catch (err) {
+      t.error(err, 'no error')
+    }
+  }
+
+  function ondownloading (handle) {
+    handle.on('finish', (total, byFile) => {
       t.same(total.downloadedBlocks, 1)
       t.same(total.downloadedBytes, 5)
       t.same(byFile.get('hello').downloadedBlocks, 1)
       t.end()
-    } catch (err) {
-      t.error(err, 'no error')
-    }
+    })
+    handle.on('error', t.fail.bind(t))
+    handle.on('cancel', t.fail.bind(t))
   }
 })
 
