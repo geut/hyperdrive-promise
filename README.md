@@ -22,7 +22,7 @@ const archive = hyperdrive('./my-first-hyperdrive') // content will be stored in
 
 try {
   await archive.writeFile('/hello.txt', 'world')
-  const list= await archive.readdir('/')
+  const list = await archive.readdir('/')
   console.log(list) // prints ['hello.txt']
   const data = await archive.readFile('/hello.txt', 'utf-8')
   console.log(data) // prints 'world'
@@ -32,6 +32,48 @@ try {
 }
 
 ```
+
+### Considerations
+
+`hyperdrive` originally combines a callback (`cb`) based API with an event
+emitter (`EE`). While in most cases it is quite simple to translate from
+`cb`s to `Promise`s, this is not true for **event emitters**. In such
+situations we decided to return an `EE` and minimize the effect of async/await. See for example the `download`
+API below.
+
+#### download
+
+In `hyperdrive`, the download API has both a callback called on
+_completion_ and event emitter for watching progress.
+
+Let's consider the following download action:
+```javascript
+const handle = drive.download('hello', { detailed: true })
+handle.on('finish', (total, byFile) => {
+  t.same(total.downloadedBlocks, 1)
+  t.same(total.downloadedBytes, 5)
+  t.same(byFile.get('hello').downloadedBlocks, 1)
+  t.end()
+})
+handle.on('error', console.error)
+```
+
+
+To maintain the same functionality the above mechanism translates to the following in
+`hyperdrive-promise`:
+
+```javascript
+try {
+  const [ total, byFile ] = await drive.download('hello', { detailed: true })
+  t.same(total.downloadedBlocks, 1)
+  t.same(total.downloadedBytes, 5)
+  t.same(byFile.get('hello').downloadedBlocks, 1)
+} catch (err) {
+  // deal with download err
+}
+```
+
+As you can see, we can only `await` the `'finish'` event. If you need to use other events you should use the regular `EE` API.
 
 ## Contributing
 
