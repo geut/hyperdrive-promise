@@ -50,10 +50,9 @@ Let's consider the following download action:
 ```javascript
 const handle = drive.download('hello', { detailed: true })
 handle.on('finish', (total, byFile) => {
-  t.same(total.downloadedBlocks, 1)
-  t.same(total.downloadedBytes, 5)
-  t.same(byFile.get('hello').downloadedBlocks, 1)
-  t.end()
+  console.log(total.downloadedBlocks)
+  console.log(total.downloadedBytes)
+  console.log(byFile.get('hello').downloadedBlocks)
 })
 handle.on('error', console.error)
 ```
@@ -65,9 +64,9 @@ To maintain the same functionality the above mechanism translates to the followi
 ```javascript
 try {
   const [ total, byFile ] = await drive.download('hello', { detailed: true })
-  t.same(total.downloadedBlocks, 1)
-  t.same(total.downloadedBytes, 5)
-  t.same(byFile.get('hello').downloadedBlocks, 1)
+  console.log(total.downloadedBlocks)
+  console.log(total.downloadedBytes)
+  console.log(byFile.get('hello').downloadedBlocks)
 } catch (err) {
   // deal with download err
 }
