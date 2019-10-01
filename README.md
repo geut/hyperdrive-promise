@@ -33,47 +33,6 @@ try {
 
 ```
 
-### Considerations
-
-`hyperdrive` originally combines a callback (`cb`) based API with an event
-emitter (`EE`). While in most cases it is quite simple to translate from
-`cb`s to `Promise`s, this is not true for **event emitters**. In such
-situations we decided to return an `EE` and minimize the effect of async/await. See for example the `download`
-API below.
-
-#### download
-
-In `hyperdrive`, the download API has both a callback called on
-_completion_ and event emitter for watching progress.
-
-Let's consider the following download action:
-```javascript
-const handle = drive.download('hello', { detailed: true })
-handle.on('finish', (total, byFile) => {
-  console.log(total.downloadedBlocks)
-  console.log(total.downloadedBytes)
-  console.log(byFile.get('hello').downloadedBlocks)
-})
-handle.on('error', console.error)
-```
-
-
-To maintain the same functionality the above mechanism translates to the following in
-`hyperdrive-promise`:
-
-```javascript
-try {
-  const [ total, byFile ] = await drive.download('hello', { detailed: true })
-  console.log(total.downloadedBlocks)
-  console.log(total.downloadedBytes)
-  console.log(byFile.get('hello').downloadedBlocks)
-} catch (err) {
-  // deal with download err
-}
-```
-
-As you can see, we can only `await` the `'finish'` event. If you need to use other events you should use the regular `EE` API.
-
 ## Contributing
 
 :busts_in_silhouette: Ideas and contributions to the project are welcome. You must follow this [guideline](https://github.com/geut/hyperdrive-promise/blob/master/CONTRIBUTING.md).
