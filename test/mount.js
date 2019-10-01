@@ -270,18 +270,15 @@ test('lists nested mounts, shared write capabilities', async t => {
 
   try {
     await drive3.ready()
-    console.log('drive3 key', drive3.key.toString('hex'))
-    console.log('drive2 key', drive2.key.toString('hex'))
-    console.log('drive1 key', drive1.key.toString('hex'))
     await drive1.mount('a', drive2.key)
     await drive1.mount('a/b', drive3.key)
     await onmount(drive1, drive2)
   } catch (err) {
-    console.log('err', err)
     t.error(err, 'no error')
   }
 
   async function onmount (drive1, drive2) {
+    await drive2.lstat('b')
     const list = await drive1.readdir('a')
     t.same(list, ['b'])
     t.end()
