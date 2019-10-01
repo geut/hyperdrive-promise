@@ -2,6 +2,8 @@
 
 An async/await based wrapper for [hyperdrive](https://github.com/mafintosh/hyperdrive) (v10+)
 
+[![Build Status](https://travis-ci.com/geut/hyperpromise.svg?branch=master)](https://travis-ci.com/geut/hyperpromise)
+
 ## Install
 
 ```
