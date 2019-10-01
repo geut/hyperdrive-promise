@@ -55,7 +55,9 @@ class HyperdrivePromise {
   _download (path, opts) {
     const downloadHandler = this.h.download(path, opts)
     downloadHandler.then = cb => {
-      downloadHandler.on('finish', cb)
+      downloadHandler.on('finish', (...args) => {
+        cb(args)
+      })
     }
     return downloadHandler
   }
