@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "tape test/index.js",
+    "posttest": "npm run lint",
     "lint": "eslint index.js",
     "prepublishOnly": "npm test"
   },
