@@ -1,6 +1,4 @@
-const t = require('tape')
-const _tape = require('tape-promise').default
-const tape = _tape(t)
+const tape = require('tape')
 const create = require('./helpers/create')
 
 tape('simple checkout', async (t) => {
