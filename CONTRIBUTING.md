@@ -1,4 +1,4 @@
-# Contributing to hyperpromise
+# Contributing to hyperdrive-promise
 
 ## Issue Contributions
 
@@ -13,13 +13,13 @@ This document will guide you through the contribution process.
 
 ### Step 1: Fork
 
-Fork the project [on GitHub](https://github.com/geut/hyperpromise) and check out your copy locally.
+Fork the project [on GitHub](https://github.com/geut/hyperdrive-promise) and check out your copy locally.
 
 ```bash
-$ git clone git@github.com:geut/hyperpromise.git
-$ cd hyperpromise
+$ git clone git@github.com:geut/hyperdrive-promise.git
+$ cd hyperdrive-promise
 $ npm install
-$ git remote add upstream git://github.com/geut/hyperpromise.git
+$ git remote add upstream git://github.com/geut/hyperdrive-promise.git
 ```
 
 ### Step 2: Branch

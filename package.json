@@ -1,7 +1,7 @@
 {
-  "name": "@geut/hyperpromise",
+  "name": "@geut/hyperdrive-promise",
   "version": "1.0.0",
-  "description": "",
+  "description": "An async/await based wrapper for hyperdrive (v10+)",
   "main": "index.js",
   "scripts": {
     "test": "tape test/index.js",

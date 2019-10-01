@@ -3,7 +3,7 @@ const hyperdrive = require('hyperdrive')
 const callbackMethods = ['ready', 'readFile', 'writeFile', 'unlink', 'mkdir',
   'rmdir', 'readdir', 'stat', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close', 'fileStats', 'truncate']
 
-class HyperPromise {
+class HyperdrivePromise {
   constructor (...args) {
     // Note (dk): check if first arg is an hyperdrive
     if (args.length === 1 && args[0].readFile) {
@@ -40,7 +40,7 @@ class HyperPromise {
   }
 
   _createDiffStream (other, prefix, opts) {
-    if (other instanceof HyperPromise) {
+    if (other instanceof HyperdrivePromise) {
       other = other.h
     }
 
@@ -49,7 +49,7 @@ class HyperPromise {
 
   _checkout (version, opts) {
     const h = this.h.checkout(version, opts)
-    return new HyperPromise(h)
+    return new HyperdrivePromise(h)
   }
 
   _download (path, opts) {
@@ -61,4 +61,4 @@ class HyperPromise {
   }
 }
 
-module.exports = (...args) => new HyperPromise(...args)
+module.exports = (...args) => new HyperdrivePromise(...args)
