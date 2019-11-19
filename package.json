@@ -12,11 +12,15 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["dat", "hyperdrive", "p2p", "async-await"],
+  "keywords": [
+    "dat",
+    "hyperdrive",
+    "p2p",
+    "async-await"
+  ],
   "author": "GEUT",
   "license": "ISC",
   "devDependencies": {
-    "corestore": "^4.0.8",
     "eslint": "^6.3.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
