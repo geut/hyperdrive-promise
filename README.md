@@ -2,7 +2,7 @@
 
 An async/await based wrapper for [hyperdrive](https://github.com/mafintosh/hyperdrive) (v10+)
 
-[![Build Status](https://travis-ci.com/geut/hyperdrive-promise.svg?branch=master)](https://travis-ci.com/geut/hyperdrive-promise)
+[![Build Status](https://travis-ci.com/geut/hyperdrive-promise.svg?branch=master)](https://travis-ci.com/geut/hyperdrive-promise) [![Greenkeeper badge](https://badges.greenkeeper.io/geut/hyperdrive-promise.svg)](https://greenkeeper.io/)
 
 ## Install
 
