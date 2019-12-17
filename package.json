@@ -36,6 +36,6 @@
     "through2": "^3.0.1"
   },
   "dependencies": {
-    "hyperdrive": "^10.3.2"
+    "hyperdrive": "10.3.2"
   }
 }
