@@ -1,7 +1,7 @@
 const tape = require('tape')
 const create = require('./helpers/create')
 
-tape('write and unlink', async (t) => {
+tape('write and unlink', async t => {
   var archive = create()
 
   try {

@@ -1,7 +1,7 @@
 const tape = require('tape')
 const create = require('./helpers/create')
 
-tape('owner is writable', async (t) => {
+tape('owner is writable', async t => {
   var archive = create()
   await archive.ready()
   t.ok(archive.writable)

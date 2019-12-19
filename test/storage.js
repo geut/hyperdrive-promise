@@ -3,7 +3,7 @@ const tmp = require('temporary-directory')
 const create = require('./helpers/create')
 const hyperpromise = require('..')
 
-tape('ram storage', async (t) => {
+tape('ram storage', async t => {
   var drive = create()
 
   await drive.ready()
@@ -12,7 +12,7 @@ tape('ram storage', async (t) => {
   t.end()
 })
 
-tape('dir storage with resume', async (t) => {
+tape('dir storage with resume', async t => {
   tmp(async (err, dir, cleanup) => {
     t.ifError(err)
     var drive = hyperpromise(dir)
@@ -25,7 +25,6 @@ tape('dir storage with resume', async (t) => {
 
       var drive2 = hyperpromise(dir)
       await drive2.ready()
-      t.error(err, 'no error')
       t.ok(drive2.metadata.writable, 'drive2 metadata is writable')
       t.ok(drive2.contentWritable, 'drive2 content is writable')
       t.same(drive2.version, 1, 'drive has version 1')
@@ -56,13 +55,13 @@ tape('dir storage for non-writable drive', async t => {
       t.end()
     })
 
-    var stream = clone.replicate()
-    stream.pipe(src.replicate()).pipe(stream)
+    var stream = clone.replicate(true)
+    stream.pipe(src.replicate(false)).pipe(stream)
   })
 })
 
-tape('dir storage without permissions emits error', function (t) {
-  t.plan(1)
+tape('dir storage without permissions emits error', t => {
+  t.plan(2)
   var drive = hyperpromise('/')
   drive.on('error', function (err) {
     t.ok(err, 'got error')
@@ -80,8 +79,8 @@ tape('write and read (sparse)', async (t) => {
     await clone.ready()
     try {
       await drive.writeFile('/hello.txt', 'world')
-      var stream = clone.replicate({ live: true, encrypt: false })
-      stream.pipe(drive.replicate({ live: true, encrypt: false })).pipe(stream)
+      var stream = clone.replicate(true, { live: true, encrypt: false })
+      stream.pipe(drive.replicate(false, { live: true, encrypt: false })).pipe(stream)
       setTimeout(() => {
         var readStream = clone.createReadStream('/hello.txt')
         readStream.on('error', function (err) {
@@ -105,8 +104,8 @@ tape('sparse read/write two files', async (t) => {
   try {
     await drive.writeFile('/hello.txt', 'world')
     await drive.writeFile('/hello2.txt', 'world')
-    var stream = clone.replicate({ live: true, encrypt: false })
-    stream.pipe(drive.replicate({ live: true, encrypt: false })).pipe(stream)
+    var stream = clone.replicate(true, { live: true, encrypt: false })
+    stream.pipe(drive.replicate(false, { live: true, encrypt: false })).pipe(stream)
     clone.metadata.update(start)
   } catch (err) {
     t.error(err, 'no error')
