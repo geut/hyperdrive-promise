@@ -61,7 +61,7 @@ tape('dir storage for non-writable drive', async t => {
 })
 
 tape('dir storage without permissions emits error', t => {
-  t.plan(2)
+  t.plan(1)
   var drive = hyperpromise('/')
   drive.on('error', function (err) {
     t.ok(err, 'got error')
