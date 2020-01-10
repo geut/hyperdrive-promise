@@ -21,7 +21,7 @@
   "author": "GEUT",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^6.3.0",
+    "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^10.0.0",
@@ -31,11 +31,11 @@
     "pumpify": "^2.0.0",
     "random-access-memory": "^3.1.1",
     "stream-collector": "^1.0.1",
-    "tape": "^4.11.0",
+    "tape": "^4.13.0",
     "temporary-directory": "^1.0.2",
     "through2": "^3.0.1"
   },
   "dependencies": {
-    "hyperdrive": "^10.5.3"
+    "hyperdrive": "^10.7.2"
   }
 }
