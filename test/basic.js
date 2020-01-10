@@ -1,8 +1,11 @@
+const { promisify } = require('util')
 const tape = require('tape')
 const hypercoreCrypto = require('hypercore-crypto')
 const Corestore = require('corestore')
 const ram = require('random-access-memory')
 const create = require('./helpers/create')
+const tmp = promisify(require('temporary-directory'))
+
 
 // END Helpers
 
@@ -100,6 +103,34 @@ tape('provide keypair', async t => {
   t.end()
 })
 
+tape('can reopen when providing a keypair', async t => {
+  const keyPair = hypercoreCrypto.keyPair()
+
+  const tmpDir = await tmp()
+  const store = new Corestore(tmpDir)
+  const drive = create(keyPair.publicKey, { keyPair, corestore: store })
+
+  await drive.ready()
+  t.ok(drive.writable)
+  t.ok(drive.metadata.writable)
+  t.ok(keyPair.publicKey.equals(drive.key))
+
+  await drive.writeFile('/hello.txt', 'world')
+  console.log('CORE LENGTH BEFORE CLOSE:', drive.metadata.length)
+  await drive.close()
+  const drive2 = create(keyPair.publicKey, { keyPair, corestore: store })
+
+  await drive2.ready()
+  console.log('CORE LENGTH:', drive2.metadata.length)
+  t.ok(drive2.writable)
+  t.ok(drive2.metadata.writable)
+  t.ok(keyPair.publicKey.equals(drive2.key))
+
+  const buf = await drive2.readFile('/hello.txt')
+  t.same(buf, Buffer.from('world'))
+  t.end()
+})
+
 tape('write and read, no cache', async t => {
   var drive = create({
     metadataStorageCacheSize: 0,
@@ -108,7 +139,7 @@ tape('write and read, no cache', async t => {
   })
 
   await drive.writeFile('/hello.txt', 'world')
-  const buf= await drive.readFile('/hello.txt')
+  const buf = await drive.readFile('/hello.txt')
   t.same(buf, Buffer.from('world'))
   t.end()
 })
@@ -116,15 +147,15 @@ tape('write and read, no cache', async t => {
 tape('can read a single directory', async function (t) {
   const drive = create(null)
 
-  let files = ['a', 'b', 'c', 'd', 'e', 'f']
-  let fileSet = new Set(files)
+  const files = ['a', 'b', 'c', 'd', 'e', 'f']
+  const fileSet = new Set(files)
 
-  for (let file of files) {
+  for (const file of files) {
     await drive.writeFile(file, 'a small file')
   }
 
   const files2 = await drive.readdir('/')
-  for (let file of files2) {
+  for (const file of files2) {
     t.true(fileSet.has(file), 'correct file was listed')
     fileSet.delete(file)
   }
@@ -135,9 +166,9 @@ tape('can read a single directory', async function (t) {
 tape('can read sparse metadata', async t => {
   const { read, write } = await getTestDrives()
 
-  let files = ['a', 'b/a/b', 'b/c', 'c/b', 'd/e/f/g/h', 'd/e/a', 'e/a', 'e/b', 'f', 'g']
+  const files = ['a', 'b/a/b', 'b/c', 'c/b', 'd/e/f/g/h', 'd/e/a', 'e/a', 'e/b', 'f', 'g']
 
-  for (let file of files) {
+  for (const file of files) {
     await write.writeFile(file, 'a small file')
     const st = await read.stat(file)
     t.true(st)
@@ -146,10 +177,10 @@ tape('can read sparse metadata', async t => {
   t.end()
 
   async function getTestDrives () {
-    let drive = create()
+    const drive = create()
     await drive.ready()
-    let clone = create(drive.key, { sparseMetadata: true, sparse: true })
-    let s1 = clone.replicate(true, { live: true })
+    const clone = create(drive.key, { sparseMetadata: true, sparse: true })
+    const s1 = clone.replicate(true, { live: true })
     s1.pipe(drive.replicate(false, { live: true })).pipe(s1)
     return { read: clone, write: drive }
   }
