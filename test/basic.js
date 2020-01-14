@@ -1,11 +1,12 @@
 const { promisify } = require('util')
+const { join } = require('path')
 const tape = require('tape')
 const hypercoreCrypto = require('hypercore-crypto')
 const Corestore = require('corestore')
 const ram = require('random-access-memory')
 const create = require('./helpers/create')
 const tmp = promisify(require('temporary-directory'))
-
+const raf = require('random-access-file')
 
 // END Helpers
 
@@ -200,4 +201,45 @@ tape('unavailable drive becomes ready', async t => {
     t.same(err.errno, 2)
     t.end()
   }
+})
+
+
+tape('reopen local drive with pk', async t => {
+
+  const getCoreStore = (base, name) => {
+    const storageLocation = join(
+      base,
+      name
+    )
+    return (file) => raf(join(storageLocation, file))
+  }
+
+  const tmpDir = await tmp()
+  const {publicKey, secretKey} = hypercoreCrypto.keyPair()
+
+  // drive1
+  const store = new Corestore(getCoreStore(tmpDir, '.dat'))
+  await store.ready()
+  var drive1 = create({ corestore:store }) // works
+  // var drive1 = create(publicKey, { corestore:store }) // doesnt work
+
+  await drive1.ready()
+
+  await drive1.writeFile('/hello.txt', 'world')
+
+  // drive2
+  const store2 = new Corestore(getCoreStore(tmpDir, '.dat'))
+  await store2.ready()
+  const drive2 = create(drive1.key, { corestore:store })
+  await drive2.ready()
+
+  const out1 = await drive2.readFile('/hello.txt')
+  t.same(out1, Buffer.from('world'))
+
+  await drive2.writeFile('/hello.txt', 'hola')
+
+  const out2 = await drive2.readFile('/hello.txt')
+  t.same(out2, Buffer.from('hola'))
+
+  t.end()
 })
