@@ -230,7 +230,7 @@ tape('reopen local drive with pk', async t => {
   // drive2
   const store2 = new Corestore(getCoreStore(tmpDir, '.dat'))
   await store2.ready()
-  const drive2 = create(drive1.key, { corestore:store })
+  const drive2 = create(drive1.key, { corestore:store2 })
   await drive2.ready()
 
   const out1 = await drive2.readFile('/hello.txt')
