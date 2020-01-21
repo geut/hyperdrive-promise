@@ -37,6 +37,6 @@
     "random-access-file": "^2.1.3"
   },
   "dependencies": {
-    "hyperdrive": "^10.7.4"
+    "hyperdrive": "^10.8.1"
   }
 }
