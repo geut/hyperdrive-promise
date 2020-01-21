@@ -228,8 +228,6 @@ tape('reopen local drive with namespace', async t => {
   await drive1.writeFile('/hello.txt', 'world')
 
   // drive2
-  const store2 = new Corestore(getCoreStore(tmpDir, '.dat'))
-  await store2.ready()
   const drive2 = create(drive1.key, { corestore: store, namespace })
   await drive2.ready()
 
