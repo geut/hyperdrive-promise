@@ -39,6 +39,7 @@ try {
 
 
 ## Sponsored By
+
 [
-<img src="https://libscie.org/assets/images/image01.png?v88639115589651" alt="Liberate Science" width="350px" />
+<img src="https://github.com/libscie.png" alt="Liberate Science" width="200px" />
 ](https://libscie.org)
