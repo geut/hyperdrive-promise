@@ -1,7 +1,7 @@
 const hyperdrive = require('hyperdrive')
 
 const callbackMethods = ['ready', 'readFile', 'writeFile', 'unlink', 'mkdir',
-  'rmdir', 'readdir', 'stat', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close', 'fileStats', 'truncate']
+  'rmdir', 'readdir', 'stat', 'stats', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close', 'truncate']
 
 class HyperdrivePromise {
   constructor (...args) {

@@ -415,8 +415,8 @@ class SparseHyperdriveFuzzer extends HyperdriveFuzzer {
     this.remoteDrive = create(this.drive.key, { sparse: true })
 
     await this.remoteDrive.ready()
-    const s1 = this.remoteDrive.replicate({ live: true, encrypt: false })
-    s1.pipe(this.drive.replicate({ live: true, encrypt: false })).pipe(s1)
+    const s1 = this.remoteDrive.replicate(true, { live: true })
+    s1.pipe(this.drive.replicate(false, { live: true })).pipe(s1)
     this.remoteDrive.ready()
   }
 

@@ -23,7 +23,6 @@ tape('stat file', async t => {
 tape('stat dir', async t => {
   var drive = create()
 
-  console.log('going into mkdir')
   try {
     await drive.mkdir('/foo')
     console.log('after mkdir')

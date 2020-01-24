@@ -13,8 +13,8 @@ test('basic read/write to/from a mount', async t => {
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   try {
     await drive2.ready()
@@ -32,8 +32,8 @@ test('should emit metadata-feed and content-feed events for all mounts', async t
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   var metadataCount = 0
   var contentCount = 0
@@ -67,8 +67,8 @@ test('can delete a mount', async t => {
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   try {
     await drive2.ready()
@@ -200,8 +200,8 @@ test('readdir returns mounts', async t => {
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   try {
     await drive2.ready()
@@ -220,8 +220,8 @@ test('cross-mount watch', async t => {
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   var watchEvents = 0
 
@@ -241,8 +241,8 @@ test('cross-mount symlink', async t => {
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   await drive2.ready()
   await drive1.mount('a', drive2.key)
@@ -262,11 +262,12 @@ test('cross-mount symlink', async t => {
 })
 
 test('lists nested mounts, shared write capabilities', async t => {
-  const store = createCorestore(ram)
+  const store = new Corestore(ram)
+  await store.ready()
 
-  const drive1 = create({ corestore: store })
-  const drive2 = create({ corestore: store })
-  const drive3 = create({ corestore: store })
+  const drive1 = create({ corestore: store, namespace: 'd1' })
+  const drive2 = create({ corestore: store, namespace: 'd2' })
+  const drive3 = create({ corestore: store, namespace: 'd3' })
 
   try {
     await drive3.ready()
@@ -289,8 +290,8 @@ test('independent corestores do not share write capabilities', async t => {
   const drive1 = create()
   const drive2 = create()
 
-  const s1 = drive1.replicate({ live: true, encrypt: false })
-  s1.pipe(drive2.replicate({ live: true, encrypt: false })).pipe(s1)
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
 
   try {
     await drive2.ready()
@@ -306,7 +307,8 @@ test('independent corestores do not share write capabilities', async t => {
 })
 
 test('shared corestores will share write capabilities', async t => {
-  const store = createCorestore(ram)
+  const store = new Corestore(ram)
+  await store.ready()
 
   const drive1 = create({ corestore: store })
   const drive2 = create({ corestore: store })
@@ -326,7 +328,9 @@ test('shared corestores will share write capabilities', async t => {
 })
 
 test('can mount hypercores', async t => {
-  const store = createCorestore(ram)
+  const store = new Corestore(ram)
+  await store.ready()
+
   const drive = create({ corestore: store })
   var core = store.get()
 
@@ -352,7 +356,8 @@ test('can mount hypercores', async t => {
 })
 
 test('truncate within mount (with shared write capabilities)', async t => {
-  const store = createCorestore(ram)
+  const store = new Corestore(ram)
+  await store.ready()
 
   const drive1 = create({ corestore: store })
   const drive2 = create({ corestore: store })
@@ -373,10 +378,10 @@ test('truncate within mount (with shared write capabilities)', async t => {
 })
 
 test('mount replication between hyperdrives', async t => {
-  const store1 = createCorestore(path => ram('cs1/' + path))
-  const store2 = createCorestore(path => ram('cs2/' + path))
-  const store3 = createCorestore(path => ram('cs3/' + path))
-  // await Promise.all([store1.ready(), store2.ready(), store3.ready()])
+  const store1 = new Corestore(path => ram('cs1/' + path))
+  const store2 = new Corestore(path => ram('cs2/' + path))
+  const store3 = new Corestore(path => ram('cs3/' + path))
+  await Promise.all([store1.ready(), store2.ready(), store3.ready()])
 
   const drive1 = create({ corestore: store1 })
   const drive2 = create({ corestore: store2 })
@@ -412,6 +417,11 @@ test('mount replication between hyperdrives', async t => {
     t.same(contents, Buffer.from('hi'))
     const contents2 = await drive3.readFile('a/hello')
     t.same(contents2, Buffer.from('world'))
+
+    const contents3 = await drive3.readFile('hey')
+    t.same(contents3, Buffer.from('hi'))
+    const contents3Hello = await drive3.readFile('a/hello')
+    t.same(contents3Hello, Buffer.from('world'))
   }
 })
 
@@ -423,7 +433,8 @@ test('mount replication between hyperdrives, multiple, nested mounts', async t =
   t.end()
 
   async function createMountee () {
-    const store = createCorestore(path => ram('cs1/' + path))
+    const store = new Corestore(path => ram('cs1/' + path))
+    await store.ready()
     const drive1 = create({ corestore: store })
     var drive2, drive3
 
@@ -452,7 +463,8 @@ test('mount replication between hyperdrives, multiple, nested mounts', async t =
   }
 
   async function createMounter (d2, d3) {
-    const store = createCorestore(path => ram('cs4/' + path))
+    const store = new Corestore(path => ram('cs4/' + path))
+    await store.ready()
     const drive1 = create({ corestore: store })
 
     try {
@@ -568,6 +580,99 @@ test('can list all mounts (including those not in memory)', async t => {
     t.true(mounts.get('/b'))
     t.end()
   }
+})
+
+test('can watch nested mounts', async t => {
+  const drive1 = create()
+  const drive2 = create()
+  const drive3 = create()
+
+  var key1, key2
+
+  replicateAll([drive1, drive2, drive3])
+
+  await drive3.ready()
+
+  await drive2.ready()
+  key1 = drive2.key
+  key2 = drive3.key
+  await onready()
+
+  async function onready () {
+    await drive1.mount('a', key1)
+    await drive2.mount('b', key2)
+    await onmount()
+  }
+
+  async function onmount () {
+    var changes = 0
+    const watcher = drive1.watch('', () => {
+      changes++
+    })
+    watcher.on('ready', async watchers => {
+      t.same(watchers.length, 2)
+      await drive2.writeFile('a', 'hello')
+      await drive3.writeFile('b', 'world')
+      setImmediate(() => {
+        t.same(changes, 3)
+        t.end()
+      })
+    })
+  }
+})
+
+test('can watch cyclic mounts', async t => {
+  const drive1 = create()
+  const drive2 = create()
+
+  var key1, key2
+
+  replicateAll([drive1, drive2])
+
+  await drive1.ready()
+  await drive2.ready()
+  key1 = drive1.key
+  key2 = drive2.key
+  await onready()
+
+  async function onready () {
+    await drive1.mount('a', key2)
+    await drive2.mount('b', key1)
+    await onmount()
+  }
+
+  async function onmount () {
+    var changes = 0
+    const watcher = drive1.watch('', () => {
+      changes++
+    })
+    watcher.on('ready', async watchers => {
+      t.same(watchers.length, 2)
+      await drive2.writeFile('c', 'hello')
+      await drive1.writeFile('c', 'world')
+      setImmediate(() => {
+        t.same(changes, 4)
+        t.end()
+      })
+    })
+  }
+})
+
+test('readdir with noMounts will not traverse mounts', async t => {
+  const drive1 = create()
+  const drive2 = create()
+
+  const s1 = drive1.replicate(true, { live: true })
+  s1.pipe(drive2.replicate(false, { live: true })).pipe(s1)
+
+  await drive2.ready()
+  await drive1.mkdir('b')
+  await drive1.mkdir('b/a')
+  await drive2.mkdir('c')
+  await drive1.mount('a', drive2.key)
+  const dirs = await drive1.readdir('/', { recursive: true, noMounts: true})
+  t.same(dirs, ['b', 'b/a', 'a'])
+  t.end()
 })
 
 test('can list in-memory mounts recursively')

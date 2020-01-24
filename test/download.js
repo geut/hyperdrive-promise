@@ -20,21 +20,20 @@ test('single-file download', async t => {
   async function onready () {
     try {
       await drive1.writeFile('hello', 'world')
-      const totals = await drive2.fileStats('hello')
+      const totals = await drive2.stats('hello')
       t.same(totals.blocks, 1)
       t.same(totals.downloadedBlocks, 0)
-      const handle = drive2.download('hello', { detailed: true })
+      const handle = drive2.download('hello')
       ondownloading(handle)
     } catch (err) {
       t.error(err, 'no error')
     }
   }
 
-  function ondownloading (handle) {
-    handle.on('finish', (total, byFile) => {
-      t.same(total.downloadedBlocks, 1)
-      t.same(total.downloadedBytes, 5)
-      t.same(byFile.get('hello').downloadedBlocks, 1)
+  async function ondownloading (handle) {
+    handle.on('finish', async () => {
+      const totals = await drive2.stats('hello')
+      t.same(totals.downloadedBlocks, 1)
       t.end()
     })
     handle.on('error', t.fail.bind(t))
@@ -62,7 +61,7 @@ test('directory download', async t => {
       await drive1.writeFile('a/2', '2')
       await drive1.writeFile('a/3', '3')
       setImmediate(() => {
-        const handle = drive2.download('a', { detailed: true })
+        const handle = drive2.download('a', { maxConcurrent: 1 })
         ondownloading(handle)
       })
     } catch (err) {
@@ -71,12 +70,11 @@ test('directory download', async t => {
   }
 
   function ondownloading (handle) {
-    handle.on('finish', (total, byFile) => {
-      t.same(total.downloadedBlocks, 3)
-      t.same(total.downloadedBytes, Buffer.from('1').length * 3)
-      t.same(byFile.get('/a/1').downloadedBlocks, 1)
-      t.same(byFile.get('/a/2').downloadedBlocks, 1)
-      t.same(byFile.get('/a/3').downloadedBlocks, 1)
+    handle.on('finish', async () => {
+      const totals = await drive2.stats('a')
+      t.same(totals.get('/a/1').downloadedBlocks, 1)
+      t.same(totals.get('/a/2').downloadedBlocks, 1)
+      t.same(totals.get('/a/3').downloadedBlocks, 1)
       t.end()
     })
     handle.on('error', t.fail.bind(t))
@@ -123,14 +121,12 @@ test('download cancellation', async t => {
 
   function ondownloading (handle) {
     setTimeout(() => {
-      handle.cancel()
+      handle.destroy()
     }, 1000)
-    handle.on('cancel', (err, total, byFile) => {
+    handle.on('finish', async (err, total, byFile) => {
       if (err) t.fail(err)
-      t.true(total.downloadedBlocks > 0)
-      t.true(total.downloadedBlocks < 100)
-      t.true(byFile.get('a').downloadedBlocks > 0)
-      t.true(byFile.get('a').downloadedBlocks < 100)
+      const totals = await drive2.stats('a')
+      t.true(totals.downloadedBlocks > 0 && totals.downloadedBlocks < 100)
       t.end()
     })
     handle.on('error', t.fail.bind(t))

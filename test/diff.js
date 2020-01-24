@@ -1,5 +1,7 @@
 const tape = require('tape')
+const collect = require('stream-collector')
 const create = require('./helpers/create')
+
 
 tape('simple diff stream', async function (t) {
   const drive = create()
@@ -85,6 +87,69 @@ async function verifyDiffStream (t, drive, [from, to], diffList) {
   return new Promise(resolve => {
     diffStream.on('data', ({ type, name }) => {
       const key = `${type}-${name}`
+      if (!diffSet.has(key)) {
+        return t.fail('an incorrect diff was streamed')
+      }
+      diffSet.delete(key)
+    })
+    diffStream.on('end', () => {
+      t.same(diffSet.size, 0)
+      return resolve()
+    })
+  })
+}
+
+tape('diff stream returns seqs', async t => {
+  const drive = create()
+  await drive.ready()
+  await Promise.all([
+    await drive.writeFile('one', Buffer.from('one')),
+    await drive.writeFile('two', Buffer.from('two')),
+    await drive.writeFile('one', Buffer.from('mod')),
+    await new Promise((resolve, reject) => {
+      const diff = drive.createDiffStream(0)
+      collect(diff, (err, res) => {
+        t.error(err)
+        res = res.map(map)
+        t.deepEqual(res, [
+          'put one 3 x',
+          'put two 2 x'
+        ], 'seqs are correct')
+        resolve()
+      })
+    }),
+    await drive.writeFile('three', Buffer.from('three')),
+    await drive.unlink('one'),
+    await new Promise((resolve, reject) => {
+      const diff = drive.createDiffStream(4)
+      collect(diff, (err, res) => {
+        t.error(err)
+        res = res.map(map)
+        t.deepEqual(res, [
+          'del one x 3',
+          'put three 5 x'
+        ], 'seqs are correct')
+      })
+      resolve()
+    })
+  ])
+
+  t.end()
+  function map (row) {
+    return `${row.type} ${row.name} ${row.seq || 'x'} ${row.previous ? row.previous.seq : 'x'}`
+  }
+})
+
+async function verifyDiffStream (t, drive, [from, to], diffList) {
+  let diffSet = new Set(diffList)
+
+  const fromDrive = from ? drive.checkout(from) : drive
+  const toDrive = to ? drive.checkout(to) : drive
+  let diffStream = toDrive.createDiffStream(fromDrive)
+
+  return new Promise(resolve => {
+    diffStream.on('data', ({ type, name }) => {
+      let key = `${type}-${name}`
       if (!diffSet.has(key)) {
         return t.fail('an incorrect diff was streamed')
       }

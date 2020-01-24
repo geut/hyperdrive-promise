@@ -1,7 +1,7 @@
 const tape = require('tape')
 const create = require('./helpers/create')
 
-tape('simple checkout', async (t) => {
+tape('simple checkout', async t => {
   const drive = create()
 
   try {
@@ -40,7 +40,7 @@ tape('simple checkout', async (t) => {
 
 // TODO: Re-enable the following tests once the `download` and `fetchLatest` APIs are reimplemented.
 
-tape('download a version', async (t) => {
+tape.skip('download a version', async t => {
   var src = create()
   await src.ready()
 
