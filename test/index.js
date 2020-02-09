@@ -1,3 +1,4 @@
+const test = require('tape')
 const proxyquire = require('proxyquire')
 const ram = require('random-access-memory')
 
@@ -58,3 +59,10 @@ const tests = [
 // We convert the promise style into callbacks (again) to test against the
 // original hyperdrive test code, if the promises are ok, the callbacks should work fine.
 tests.forEach(test => proxyquire(`hyperdrive/test/${test}`, { './helpers/create': create }))
+
+test('cache methods', async function (t) {
+  t.plan(1)
+
+  const drive = hyperdrive(ram)
+  t.equal(drive.readFile, drive.readFile, 'Should get the same readFile function')
+})
