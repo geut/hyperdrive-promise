@@ -1,54 +1,84 @@
 const hyperdrive = require('hyperdrive')
 
-const callbackMethods = ['ready', 'readFile', 'writeFile', 'unlink', 'mkdir',
-  'rmdir', 'readdir', 'stat', 'stats', 'lstat', 'access', 'open', 'read', 'write', 'symlink', 'mount', 'unmount', 'getAllMounts', 'close', 'truncate']
+const callbackMethods = require('./callback-methods')
+
+const kHyperdrive = Symbol('hyperdrive')
+
+const getHyperdrive = drive => drive[kHyperdrive]
 
 class HyperdrivePromise {
   constructor (...args) {
-    // Note (dk): check if first arg is an hyperdrive
+    let drive
     if (args.length === 1 && args[0].readFile) {
-      this.h = args[0]
+      drive = args[0]
     } else {
-      this.h = hyperdrive(...args)
+      drive = hyperdrive(...args)
     }
 
+    this._cache = {}
     this._createDiffStream.bind(this)
     this._checkout.bind(this)
 
-    return new Proxy(this, this)
+    return new Proxy(drive, this)
   }
 
-  get (target, propKey, receiver) {
-    if (propKey === 'h') return this.h
+  get (target, propKey) {
+    if (propKey === kHyperdrive) return target
+
     if (propKey === 'createDiffStream') return this._createDiffStream
     if (propKey === 'checkout') return this._checkout
-    if (callbackMethods.includes(propKey)) return this._buildPromise(propKey)
-    if (typeof this.h[propKey] === 'function') return (...args) => this.h[propKey](...args)
-    return this.h[propKey]
+    const value = Reflect.get(target, propKey)
+    if (typeof value === 'function') return this._getMethod(target, propKey, value)
+    return value
   }
 
-  _buildPromise (method) {
-    return (...args) => new Promise((resolve, reject) => {
-      args.push((err, ...rest) => {
-        if (err) return reject(err)
-        resolve(...rest)
-      })
-      this.h[method](...args)
-    })
+  _getMethod (target, propKey, func) {
+    let method = this._cache[propKey]
+
+    if (method) return method
+
+    if (callbackMethods.includes(propKey)) {
+      method = (...args) => {
+        // We keep suporting the callback style if we get a callback.
+        if (typeof args[args.length - 1] === 'function') {
+          return Reflect.apply(func, target, args)
+        }
+
+        return new Promise((resolve, reject) => {
+          args.push((err, ...result) => {
+            if (err) return reject(err)
+            if (result.length > 1) {
+              resolve(result)
+            } else {
+              resolve(result[0])
+            }
+          })
+
+          Reflect.apply(func, target, args)
+        })
+      }
+    } else {
+      method = (...args) => Reflect.apply(func, target, args)
+    }
+
+    this._cache[propKey] = method
+
+    return method
   }
 
   _createDiffStream (other, prefix, opts) {
     if (other instanceof HyperdrivePromise) {
-      other = other.h
+      other = getHyperdrive(other)
     }
 
-    return this.h.createDiffStream(other, prefix, opts)
+    return getHyperdrive(this).createDiffStream(other, prefix, opts)
   }
 
   _checkout (version, opts) {
-    const h = this.h.checkout(version, opts)
+    const h = getHyperdrive(this).checkout(version, opts)
     return new HyperdrivePromise(h)
   }
 }
 
 module.exports = (...args) => new HyperdrivePromise(...args)
+module.exports.getHyperdrive = getHyperdrive
