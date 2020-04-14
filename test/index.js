@@ -1,5 +1,5 @@
 const test = require('tape')
-const proxyquire = require('proxyquire')
+const proxyquire = require('proxyquire').noCallThru()
 const ram = require('random-access-memory')
 
 const hyperdrive = require('..')
