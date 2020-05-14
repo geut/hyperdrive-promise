@@ -11,3 +11,5 @@ npm-debug.log
 
 .next/
 out/
+
+package-lock.json
