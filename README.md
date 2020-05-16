@@ -17,7 +17,7 @@ $ npm install @geut/hyperdrive-promise
 E.g.:
 
 ```javascript
-const hyperdrive = require('hyperdrive-promise')
+const hyperdrive = require('@geut/hyperdrive-promise')
 const archive = hyperdrive('./my-first-hyperdrive') // content will be stored in this folder
 
 try {
