@@ -33,7 +33,7 @@
     "temporary-directory": "^1.0.2"
   },
   "dependencies": {
-    "hyperdrive": "^10.10.3"
+    "hyperdrive": "^10.11.2"
   },
   "standard": {
     "env": [
