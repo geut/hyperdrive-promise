@@ -33,6 +33,7 @@
     "temporary-directory": "^1.0.2"
   },
   "dependencies": {
+    "hyper-typings": "^1.0.0",
     "hyperdrive": "^10.17.0"
   },
   "standard": {
