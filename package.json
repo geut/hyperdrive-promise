@@ -11,7 +11,8 @@
     "test": "tape test/index.js",
     "posttest": "npm run lint",
     "lint": "standard '*.js' 'test/index.js'",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "release": "np"
   },
   "publishConfig": {
     "access": "public"
@@ -26,6 +27,7 @@
   "license": "ISC",
   "devDependencies": {
     "fuzzbuzz": "^2.0.0",
+    "np": "^7.4.0",
     "proxyquire": "^2.1.3",
     "random-access-memory": "^3.1.1",
     "standard": "^14.3.4",
