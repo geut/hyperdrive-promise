@@ -35,11 +35,7 @@ try {
 
 ## Release
 
-We are using [np](https://github.com/sindresorhus/np). Just run:
-
-`npm run release`
-
-And you will be prompted to enter a version.
+`npm version` && `npm publish`
 
 ## Contributing
 
